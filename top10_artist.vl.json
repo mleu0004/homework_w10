@@ -1,0 +1,59 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 700,
+  "height": 300,
+  "title": "Top 10 Spotify Artist per Year",
+  "data": {
+    "url": "https://raw.githubusercontent.com/mleu0004/homework_w10/main/top10s.csv"
+  },
+  "params": [
+    {
+      "name": "year_above",
+      "value": 2010,
+      "bind": {
+        "input": "range",
+        "min": 2010,
+        "max": 2019,
+        "step": 1,
+        "name": "Year : "
+      }
+    }
+  ],
+  "transform": [
+    {"calculate": "year(datum.year)", "as": "year"},
+    {"filter": "datum.year == year_above"},
+    {
+      "aggregate": [
+        {"op": "mean", "field": "pop", "as": "mean_popularity"},
+        {"op": "median", "field": "year", "as": "median_year"}
+      ],
+      "groupby": ["artist"]
+    },
+    {
+      "window": [{"op": "rank", "as": "rank"}],
+      "sort": [{"field": "mean_popularity", "order": "descending"}]
+    },
+    {"filter": "datum.rank <= 10"}
+  ],
+  "mark": "bar",
+  "encoding": {
+    "x": {"field": "mean_popularity", "type": "quantitative", "title": "Popularity"},
+    "y": {
+      "field": "artist",
+      "type": "nominal",
+      "sort": {"field": "mean_popularity", "order": "descending"},
+      "title": "Artist"
+    },
+    "color": {
+      "field": "mean_popularity",
+      "scale": {"scheme": "greens"},
+      "legend": null
+    },
+    "tooltip": [
+      {"field": "artist", "type": "nominal"},
+      {"field": "mean_popularity", "type": "quantitative"},
+      {"field": "median_year", "type": "quantitative"}
+    ]
+  },
+  "config": {}
+}
